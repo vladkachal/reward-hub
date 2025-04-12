@@ -52,6 +52,7 @@ class User(UUIDPrimaryKeyModelMixin, AbstractUser):
             "unique": _("A user with that email already exists."),
         },
     )
+    coins = models.IntegerField(_("coins"), default=0, editable=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]

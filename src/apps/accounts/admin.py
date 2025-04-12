@@ -33,9 +33,10 @@ class UserAdmin(DjangoUserAdmin):
         "email",
         "first_name",
         "last_name",
+        "coins",
         "date_joined",
     ]
-    readonly_fields = ["id"]
+    readonly_fields = ["id", "coins"]
     fieldsets = [
         (None, {"fields": ("username", "email", "password", "id")}),
         (
@@ -44,6 +45,7 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": (
                     "first_name",
                     "last_name",
+                    "coins",
                 ),
             },
         ),
