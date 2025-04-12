@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.auth",
     "apps.core",
+    "apps.rewards",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

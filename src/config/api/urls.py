@@ -15,4 +15,8 @@ urlpatterns = [
         "accounts/",
         include("apps.accounts.api.urls"),
     ),
+    path(
+        "rewards/",
+        include("apps.rewards.api.urls"),
+    ),
 ]
