@@ -38,23 +38,12 @@ class BaseUserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserProfileReadSerializer(BaseUserProfileSerializer):
-    groups = UserGroupReadSerializer(many=True)
-    user_permissions = UserPermissionReadSerializer(many=True)
-
     class Meta(BaseUserProfileSerializer.Meta):
         fields = [
             "id",
-            "email",
             "username",
-            "first_name",
-            "last_name",
-            "groups",
-            "user_permissions",
-            "is_superuser",
-            "is_staff",
-            "is_active",
-            "last_login",
-            "date_joined",
+            "email",
+            "coins",
         ]
 
 
@@ -62,8 +51,6 @@ class UserProfileWriteSerializer(BaseUserProfileSerializer):
     class Meta(BaseUserProfileSerializer.Meta):
         fields = [
             "username",
-            "first_name",
-            "last_name",
         ]
         extra_kwargs = {
             "username": {"allow_blank": False},
