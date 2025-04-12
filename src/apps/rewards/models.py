@@ -51,6 +51,26 @@ class ScheduledReward(UUIDPrimaryKeyModelMixin, models.Model):
             logger.warning(msg)
 
 
+class RewardRequestByUser(models.Model):
+    """
+    This model tracks if a ScheduledReward was requested manually by the user.
+    """
+
+    reward = models.OneToOneField(
+        ScheduledReward,
+        related_name="requested_by_user",
+        on_delete=models.CASCADE,
+        verbose_name=_("reward"),
+    )
+
+    class Meta:
+        verbose_name = _("reward request by user")
+        verbose_name_plural = _("reward requests by users")
+
+    def __str__(self) -> str:
+        return f"...{self.reward.short_id} by {self.reward.user}"
+
+
 class RewardLog(UUIDPrimaryKeyModelMixin, models.Model):
     user = models.ForeignKey(
         User,

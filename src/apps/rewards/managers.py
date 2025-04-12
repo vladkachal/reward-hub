@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import logging
 
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.db.models import Case, Value, When
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -17,7 +19,15 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class ScheduledRewardQuerySet(models.QuerySet): ...
+class ScheduledRewardQuerySet(models.QuerySet):
+    def annotate_is_requested_by_user(self) -> models.QuerySet:
+        return self.annotate(
+            is_requested_by_user=Case(
+                When(requested_by_user__isnull=False, then=Value(True)),  # noqa: FBT003
+                default=Value(False),  # noqa: FBT003
+                output_field=models.BooleanField(),
+            )
+        )
 
 
 class ScheduledRewardManager(models.Manager):
@@ -69,6 +79,52 @@ class ScheduledRewardManager(models.Manager):
             user.coins += reward.amount
             user.save()
             RewardLog.objects.create(user=reward.user, amount=reward.amount)
+
+    def request_reward(
+        self, user: User, *, amount: int = 10, delay: int = 5
+    ) -> ScheduledReward | None:
+        """
+        Creates a ScheduledReward as a result of a manual reward request
+        by the user.
+        This method is used when a user explicitly requests a reward.
+
+        Args:
+            user (User): The user requesting the reward
+            amount (int): The amount of coins to be rewarded
+            delay (int): The delay in minutes before the reward is given
+
+        Return:
+            The created ScheduledReward object.
+        """
+
+        from .models import RewardRequestByUser
+
+        reward = self.create(
+            user=user,
+            amount=amount,
+            execute_at=timezone.now() + timedelta(minutes=delay),
+        )
+
+        RewardRequestByUser.objects.create(reward=reward)
+        return reward
+
+    def get_last_manual_request(self, user: User) -> ScheduledReward | None:
+        """
+        Returns the most recent manually requested reward for the given user.
+
+        Args:
+            user (User): The user for whom the last reward is requested.
+
+        Return:
+            ScheduledReward | None: The latest manually requested reward
+            for the user, or None if no such reward exists.
+        """
+
+        return (
+            self.filter(user=user, requested_by_user__isnull=False)
+            .order_by("-execute_at")
+            .first()
+        )
 
 
 ScheduledRewardManager = ScheduledRewardManager.from_queryset(

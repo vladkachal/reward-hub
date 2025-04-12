@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
 from .models import RewardLog, ScheduledReward
 
@@ -13,12 +14,24 @@ if TYPE_CHECKING:
 
 @admin.register(ScheduledReward)
 class ScheduledRewardAdmin(admin.ModelAdmin):
-    list_display = ["id", "user", "amount", "execute_at"]
+    list_display = [
+        "id",
+        "user",
+        "amount",
+        "_is_requested_by_user",
+        "execute_at",
+    ]
+    readonly_fields = ["_is_requested_by_user"]
     search_fields = ["id", "user__email", "user__username"]
     autocomplete_fields = ["user"]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[ScheduledReward]:
-        return super().get_queryset(request).select_related("user")
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("user")
+            .annotate_is_requested_by_user()
+        )
 
     def has_change_permission(
         self, request: HttpRequest, obj: RewardLog = None
@@ -29,6 +42,10 @@ class ScheduledRewardAdmin(admin.ModelAdmin):
         self, request: HttpRequest, obj: RewardLog = None
     ) -> bool:
         return False
+
+    @admin.display(description=_("manual"))
+    def _is_requested_by_user(self, obj: ScheduledReward) -> bool:
+        return obj.is_requested_by_user
 
 
 @admin.register(RewardLog)
