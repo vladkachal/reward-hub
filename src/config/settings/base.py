@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # --------------------------------------------------------------------------
     # Local apps
     "apps.accounts",
+    "apps.auth",
     "apps.core",
 ]
 MIDDLEWARE = [
