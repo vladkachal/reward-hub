@@ -57,9 +57,6 @@ class ScheduledRewardManager(models.Manager):
         Args:
             reward (ScheduledReward): The scheduled reward instance
                 to be processed.
-
-        Raises:
-            DoesNotExist: If the scheduled reward is not found in the database.
         """
 
         from .models import RewardLog
