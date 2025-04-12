@@ -1,8 +1,7 @@
-from rest_framework import mixins
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet, ViewSet
+from rest_framework.viewsets import ViewSet
 
 from django.contrib.auth import get_user_model
 
