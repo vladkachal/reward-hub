@@ -1,0 +1,56 @@
+x-django-base: &django-base
+  build:
+    context: ../
+    dockerfile: ./docker/django/Dockerfile
+    args:
+      CURRENT_ENVIRONMENT: ${CURRENT_ENVIRONMENT}
+  env_file:
+    - ../.env
+
+services:
+  django-init:
+    <<: *django-base
+    entrypoint: ["/app/docker/django/init/entrypoint-${CURRENT_ENVIRONMENT}.sh"]
+    depends_on:
+      - postgres
+      - redis
+
+  django:
+    entrypoint: ["/app/docker/django/entrypoint.sh"]
+    <<: *django-base
+    depends_on:
+      django-init:
+          condition: service_completed_successfully
+
+  celery:
+    entrypoint: ["/app/docker/django/celery/entrypoint.sh"]
+    <<: *django-base
+    depends_on:
+      django-init:
+          condition: service_completed_successfully
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_NAME=${DATABASE_NAME}
+      - POSTGRES_HOST=${DATABASE_HOST}
+      - POSTGRES_PORT=${DATABASE_PORT}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    expose:
+      - '5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data_backups:/backups/
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - '6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  postgres_data_backups:
+  redis_data:

@@ -1,0 +1,53 @@
+name: reward-hub-dev
+
+x-django-develop: &django-develop
+  develop:
+    watch:
+      # Rebuild the image if dependencies change by checking uv.lock file.
+      - action: rebuild
+        path: ../uv.lock
+
+services:
+  django-init:
+    extends:
+      file: compose.common.yaml
+      service: django-init
+
+  django:
+    extends:
+      file: compose.common.yaml
+      service: django
+    <<: *django-develop
+    command:  ["python", "src/manage.py", "runserver", "0.0.0.0:8000"]
+    ports:
+      - '8000:8000'
+    volumes:
+      - ../src:/app/src
+
+  celery:
+    extends:
+      file: compose.common.yaml
+      service: celery
+    <<: *django-develop
+    command: ["sh", "-c", "cd src && watchfiles --filter python celery.__main__.main --args '-A config.celery_app worker --hostname=worker-1@%h --autoscale=3,1'"]
+    volumes:
+      - ../src:/app/src
+
+  postgres:
+    extends:
+      file: compose.common.yaml
+      service: postgres
+    ports:
+      - '5432:5432'
+
+  redis:
+    extends:
+      file: compose.common.yaml
+      service: redis
+    ports:
+      - '6379:6379'
+
+volumes:
+  postgres_data:
+  postgres_data_backups:
+  redis_data:
