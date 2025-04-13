@@ -76,7 +76,6 @@ class ScheduledRewardManager(models.Manager):
             user.coins += reward.amount
             user.save()
             RewardLog.objects.create(user=reward.user, amount=reward.amount)
-            reward.delete()
 
     def request_reward(
         self, user: User, *, amount: int = 10, delay: int = 5
