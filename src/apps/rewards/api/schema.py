@@ -14,10 +14,10 @@ schedule_reward_request_schema_view = extend_schema_view(
             " - Upon a successful request, a ScheduledReward is created which"
             "  will be processed after 5 minutes."
         ),
+        responses={
+            201: ScheduledRewardReadSerializer,
+        },
     ),
-    response={
-        201: ScheduledRewardReadSerializer,
-    },
 )
 
 reward_log_schema_view = extend_schema_view(
